@@ -20,8 +20,12 @@ export function SiteHeader() {
 
         {/* Logo Central (La Copa) */}
         <div className="absolute left-1/2 top-0 -translate-x-1/2 transform">
-          <div className="rounded-b-2xl border-x-4 border-b-4 border-gold bg-royal p-2 shadow-xl">
-            <img src="/crest.png" alt="Mundial Total" className="h-16 w-auto" />
+          <div className="rounded-b-2xl border-5 border-gold bg-royal p-2 shadow-2xl ring-4 ring-gold">
+            <img
+              src="src/assets/copa.webp"
+              alt="Mundial Total"
+              className="h-24 w-auto"
+            />
           </div>
         </div>
 
