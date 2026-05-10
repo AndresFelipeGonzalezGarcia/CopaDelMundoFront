@@ -1,27 +1,36 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { Layout } from "../components/layout/Layout";
+import LandingPage from "../pages/LandingPage";
+import AuthPage from "../pages/AuthPage";
 import DashboardPage from "../pages/DashboardPage";
 import AlbumPage from "../pages/AlbumPage";
+import CalendarPage from "../pages/CalendarPage";
+import PollasPage from "../pages/PollasPage";
+import ContactPage from "../pages/ContactPage";
+import GalleryPage from "../pages/GalleryPage";
+import PerfilPage from "../pages/PerfilPage";
+import CheckoutPage from "../pages/CheckOut";
+import AdminPage from "../pages/AdminPage";
 
-export const AppRouter = () => {
+export default function AppRouter() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Layout />}>
-          <Route index element={<DashboardPage />} />
-          <Route path="album" element={<AlbumPage />} />
+        {/* ZONA PÚBLICA */}
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/login" element={<AuthPage />} />
 
-          <Route
-            path="pollas"
-            element={
-              <h1 style={{ padding: "50px" }}>
-                Página de Pollas en construcción
-              </h1>
-            }
-          />
-          {/* Aquí puedes meter tus rutas de admin luego */}
-        </Route>
+        {/* ZONA PRIVADA (A la que entras después de hacer login) */}
+        <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/galeria" element={<GalleryPage />} />
+        <Route path="/album" element={<AlbumPage />} />
+        <Route path="/calendario" element={<CalendarPage />} />
+        <Route path="/pollas" element={<PollasPage />} />
+        <Route path="/checkout" element={<CheckoutPage />} />
+        <Route path="/contacto" element={<ContactPage />} />
+        <Route path="/perfil" element={<PerfilPage />} />
+        {/* RUTAS ADMIN (Solo accesibles para usuarios con rol admin) */}
+        <Route path="/admin" element={<AdminPage />} />
       </Routes>
     </BrowserRouter>
   );
-};
+}

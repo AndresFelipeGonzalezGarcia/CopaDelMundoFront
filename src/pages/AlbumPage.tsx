@@ -1,17 +1,24 @@
-import { useEffect, useState } from "react";
-import { PageShell } from "../components/layout/PageShell";
-import { Star, Globe2, X, Sparkles } from "lucide-react";
-import {
-  albumService,
-  type ProgresoAlbum,
-  type PaisAlbum,
-} from "../service/albumService";
+import { useState, useEffect } from "react";
+import { PageShell, T } from "../components/layout/PageShell";
 
-// Agrupamos la estructura por confederación
-const SECCIONES_ALBUM = [
+// ─── Tipos ────────────────────────────────────────────────────────────────────
+interface PaisAlbum {
+  id: number;
+  nombre: string;
+  bandera: string;
+}
+
+interface SeccionAlbum {
+  nombre: string;
+  icono: string; // clase de Tabler Icons, ej: "ti-map"
+  paises: PaisAlbum[];
+}
+
+// ─── Mock Data ────────────────────────────────────────────────────────────────
+const SECCIONES_ALBUM: SeccionAlbum[] = [
   {
-    nombre: "CONMEBOL (Sudamérica)",
-    icono: "🌎",
+    nombre: "CONMEBOL · Sudamérica",
+    icono: "ti-map",
     paises: [
       { id: 1, nombre: "Colombia", bandera: "🇨🇴" },
       { id: 2, nombre: "Argentina", bandera: "🇦🇷" },
@@ -22,8 +29,8 @@ const SECCIONES_ALBUM = [
     ],
   },
   {
-    nombre: "UEFA (Europa)",
-    icono: "🌍",
+    nombre: "UEFA · Europa",
+    icono: "ti-world",
     paises: [
       { id: 7, nombre: "Alemania", bandera: "🇩🇪" },
       { id: 8, nombre: "Francia", bandera: "🇫🇷" },
@@ -33,245 +40,686 @@ const SECCIONES_ALBUM = [
       { id: 12, nombre: "Italia", bandera: "🇮🇹" },
     ],
   },
+  {
+    nombre: "CONCACAF · N. América",
+    icono: "ti-building",
+    paises: [
+      { id: 13, nombre: "México", bandera: "🇲🇽" },
+      { id: 14, nombre: "EE. UU.", bandera: "🇺🇸" },
+      { id: 15, nombre: "Canadá", bandera: "🇨🇦" },
+      { id: 16, nombre: "Costa Rica", bandera: "🇨🇷" },
+      { id: 17, nombre: "Jamaica", bandera: "🇯🇲" },
+      { id: 18, nombre: "Panamá", bandera: "🇵🇦" },
+    ],
+  },
 ];
 
-export default function AlbumPage() {
-  const [progreso, setProgreso] = useState<ProgresoAlbum | null>(null);
-  const [misLaminas, setMisLaminas] = useState<number[]>([]);
-  const [cargando, setCargando] = useState(true);
+const TOTAL_LAMINAS = 48;
 
-  // Estados para la animación del sobre
-  const [abriendoSobre, setAbriendoSobre] = useState(false);
-  const [laminasReveladas, setLaminasReveladas] = useState<PaisAlbum[] | null>(
-    null,
-  );
+// ─── Tokens ───────────────────────────────────────────────────────────────────
+const gold = "#c99722";
+const goldLight = "#e0b040";
+const bg = "#060810";
+const bgCard = "#0d1120";
+const bgDark = "#080c18";
+const borderGold = "#c9972233";
+const fontDisplay = "'Bebas Neue', sans-serif";
+const fontBody = "'DM Sans', sans-serif";
 
-  const usuarioId = 1;
-
-  // Carga inicial
-  useEffect(() => {
-    const cargarDatosAlbum = async () => {
-      try {
-        const [dataProgreso, dataInventario] = await Promise.all([
-          albumService.obtenerProgreso(usuarioId),
-          albumService.obtenerMisLaminas(usuarioId),
-        ]);
-        setProgreso(dataProgreso);
-        setMisLaminas(dataInventario);
-      } catch (error) {
-        console.error("Error sincronizando:", error);
-      } finally {
-        setTimeout(() => setCargando(false), 800);
-      }
-    };
-    cargarDatosAlbum();
-  }, []);
-
-  const tengoLaLamina = (id: number) => misLaminas.includes(id);
-
-  // LOGICA PARA ABRIR EL SOBRE
-  const manejarAbrirSobre = async () => {
-    setAbriendoSobre(true);
-    setLaminasReveladas(null); // Resetea las láminas previas si las hay
-
-    try {
-      const nuevasLaminas = await albumService.abrirSobre(usuarioId);
-      setLaminasReveladas(nuevasLaminas);
-
-      // Actualizamos el inventario local para que el álbum de fondo se actualice mágicamente
-      const nuevosIds = nuevasLaminas.map((l) => l.id);
-      setMisLaminas((prev) => [...new Set([...prev, ...nuevosIds])]);
-
-      // Actualizamos la barra de progreso
-      setProgreso((prev) =>
-        prev
-          ? {
-              ...prev,
-              laminasObtenidas:
-                prev.laminasObtenidas +
-                nuevasLaminas.filter((l) => !tengoLaLamina(l.id)).length,
-            }
-          : null,
-      );
-    } catch (error) {
-      console.error("Error al abrir sobre:", error);
-      setAbriendoSobre(false);
-    }
-  };
-
-  const cerrarModal = () => {
-    setAbriendoSobre(false);
-    setLaminasReveladas(null);
-  };
-
-  if (cargando || !progreso) {
-    return (
-      <PageShell title="Cargando Álbum...">
-        <div className="flex flex-col items-center justify-center py-20">
-          <div className="h-12 w-12 animate-spin rounded-full border-4 border-gold border-t-transparent"></div>
-          <h1 className="mt-4">Estamos cargando tu proceso chiquis</h1>
-        </div>
-      </PageShell>
-    );
-  }
-
+// ─── Sub-componentes ──────────────────────────────────────────────────────────
+function EyebrowLabel({ children }: { children: React.ReactNode }) {
   return (
-    <PageShell
-      eyebrow="Colección de Banderas • 2026"
-      title="Álbum Mundial"
-      description="Colecciona las banderas de los 48 países clasificados al mundial."
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 8,
+        marginBottom: "0.5rem",
+      }}
     >
-      <div className="space-y-12">
-        {/* WIDGET DE PROGRESO */}
-        <div className="rounded-2xl border-2 border-gold/20 bg-white p-6 shadow-xl">
-          <div className="mb-4 flex items-center justify-between">
-            <h3 className="font-display text-xl font-black text-royal uppercase">
-              Banderas Coleccionadas
-            </h3>
-            <span className="font-bold text-gold text-2xl">
-              {progreso.laminasObtenidas} / {progreso.totalLaminas}
-            </span>
-          </div>
-          <div className="h-4 w-full overflow-hidden rounded-full bg-gray-100">
-            <div
-              className="h-full bg-gradient-to-r from-gold to-yellow-500 transition-all duration-1000 ease-out"
-              style={{
-                width: `${Math.round((progreso.laminasObtenidas / progreso.totalLaminas) * 100)}%`,
-              }}
-            />
-          </div>
-          {/* ¡AQUÍ ESTÁ DE VUELTA EL TEXTO DEL PORCENTAJE! */}
-          <p className="mt-2 text-right text-xs font-bold text-gray-400">
-            {Math.round(
-              (progreso.laminasObtenidas / progreso.totalLaminas) * 100,
-            )}
-            % del mundo descubierto
-          </p>
-        </div>
-        {/* LISTADO POR CONFEDERACIONES */}
-        {SECCIONES_ALBUM.map((seccion) => (
-          <div key={seccion.nombre} className="space-y-6">
-            <div className="flex items-center gap-4 border-b-2 border-gray-100 pb-2">
-              <span className="text-3xl">{seccion.icono}</span>
-              <h2 className="font-display text-2xl font-black text-royal uppercase">
-                {seccion.nombre}
-              </h2>
-            </div>
+      <div style={{ width: 3, height: 14, background: gold, flexShrink: 0 }} />
+      <span
+        style={{
+          fontFamily: fontDisplay,
+          fontSize: "0.65rem",
+          color: gold,
+          letterSpacing: "0.22em",
+          textTransform: "uppercase" as const,
+        }}
+      >
+        {children}
+      </span>
+    </div>
+  );
+}
 
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
-              {seccion.paises.map((pais) => (
-                <div key={pais.id} className="group relative aspect-[3/4]">
-                  {tengoLaLamina(pais.id) ? (
-                    <div className="h-full w-full overflow-hidden rounded-xl border-2 border-gold bg-white shadow-md">
-                      <div className="flex h-3/4 items-center justify-center bg-gray-50 text-6xl drop-shadow-md">
-                        {pais.bandera}
-                      </div>
-                      <div className="flex h-1/4 items-center justify-center bg-royal text-[10px] font-black text-white border-t-2 border-gold uppercase tracking-wider text-center px-1">
-                        {pais.nombre}
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="flex h-full w-full flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 transition-colors hover:border-gold/50">
-                      <Globe2 className="text-gray-200 mb-2" size={32} />
-                      <span className="text-xl font-black text-gray-300">
-                        {pais.id.toString().padStart(2, "0")}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        ))}
-
-        {/* BOTÓN DE SOBRE */}
-        <div className="flex flex-col items-center gap-4 pt-10">
-          <button
-            onClick={manejarAbrirSobre}
-            className="group relative inline-flex items-center justify-center gap-3 rounded-full bg-royal px-10 py-5 font-black text-white shadow-2xl transition-all hover:scale-105 hover:bg-[#0f2a5a] hover:shadow-gold/40"
-          >
-            <Star
-              className="text-gold group-hover:animate-spin"
-              fill="#D4AF37"
-              size={24}
-            />
-            <span className="tracking-widest">ABRIR SOBRE DE PAÍSES</span>
-          </button>
-        </div>
+function CardObtenida({
+  pais,
+  isHovered,
+  onMouseEnter,
+  onMouseLeave,
+}: {
+  pais: PaisAlbum;
+  isHovered: boolean;
+  onMouseEnter: () => void;
+  onMouseLeave: () => void;
+}) {
+  return (
+    <div
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+      style={{
+        aspectRatio: "3/4",
+        borderRadius: 3,
+        display: "flex",
+        flexDirection: "column",
+        overflow: "hidden",
+        cursor: "pointer",
+        transition: "all 0.2s",
+        transform: isHovered ? "translateY(-4px)" : "none",
+        background: bgCard,
+        border: `1px solid ${isHovered ? gold + "66" : borderGold}`,
+      }}
+    >
+      <div
+        style={{
+          flex: 1,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontSize: "3.5rem",
+        }}
+      >
+        {pais.bandera}
       </div>
+      <div
+        style={{
+          background: bgDark,
+          borderTop: `1px solid ${borderGold}`,
+          padding: "6px 8px",
+          textAlign: "center",
+        }}
+      >
+        <span
+          style={{
+            fontFamily: fontDisplay,
+            fontSize: "0.75rem",
+            color: "#c4cad8",
+            textTransform: "uppercase" as const,
+            letterSpacing: "0.1em",
+          }}
+        >
+          {pais.nombre}
+        </span>
+      </div>
+    </div>
+  );
+}
 
-      {/* MODAL DE APERTURA DE SOBRE (OVERLAY) */}
-      {abriendoSobre && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-royal/95 backdrop-blur-sm p-4">
-          <div className="relative w-full max-w-4xl text-center">
-            {/* Botón Cerrar */}
-            {laminasReveladas && (
-              <button
-                onClick={cerrarModal}
-                className="absolute -top-12 right-0 text-white hover:text-gold transition-colors"
+function CardVacia({ id }: { id: number }) {
+  return (
+    <div
+      style={{
+        aspectRatio: "3/4",
+        borderRadius: 3,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        background: bg,
+        border: "1px dashed #0d1526",
+      }}
+    >
+      <span
+        style={{
+          fontFamily: fontDisplay,
+          fontSize: "1.3rem",
+          color: "#131b2e",
+          letterSpacing: "0.05em",
+        }}
+      >
+        {String(id).padStart(2, "0")}
+      </span>
+    </div>
+  );
+}
+
+// ─── Modal Sobre ──────────────────────────────────────────────────────────────
+function ModalSobre({
+  cargando,
+  nuevasLaminas,
+  onClose,
+}: {
+  cargando: boolean;
+  nuevasLaminas: PaisAlbum[] | null;
+  onClose: () => void;
+}) {
+  return (
+    <>
+      <style>{`
+        @keyframes mfadein { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes mslideup { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes mspin { to { transform: rotate(360deg); } }
+        @keyframes cardReveal { from { opacity: 0; transform: translateY(20px) scale(0.92); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        .sobre-close:hover { color: ${gold} !important; }
+        .sobre-cta:hover { background-position: 100% 0 !important; }
+      `}</style>
+
+      <div
+        onClick={onClose}
+        style={{
+          position: "fixed",
+          inset: 0,
+          background: "rgba(6,8,16,0.95)",
+          backdropFilter: "blur(6px)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          zIndex: 999,
+          padding: "2rem",
+          animation: "mfadein 0.2s ease",
+        }}
+      >
+        <div
+          onClick={(e) => e.stopPropagation()}
+          style={{
+            background: `linear-gradient(160deg, ${bgCard}, ${bgDark})`,
+            border: `1px solid ${borderGold}`,
+            borderTop: `3px solid ${gold}`,
+            borderRadius: 4,
+            width: "100%",
+            maxWidth: 500,
+            padding: "2rem",
+            textAlign: "center",
+            position: "relative",
+            animation: "mslideup 0.3s cubic-bezier(0.16,1,0.3,1)",
+          }}
+        >
+          {nuevasLaminas && (
+            <button
+              className="sobre-close"
+              onClick={onClose}
+              aria-label="Cerrar"
+              style={{
+                position: "absolute",
+                top: "1rem",
+                right: "1rem",
+                background: "none",
+                border: "none",
+                color: "#3a4258",
+                fontSize: 18,
+                cursor: "pointer",
+                transition: "color 0.2s",
+              }}
+            >
+              <i className="ti ti-x" aria-hidden="true" />
+            </button>
+          )}
+
+          {cargando ? (
+            <div style={{ padding: "2rem 0" }}>
+              <div
+                style={{
+                  width: 36,
+                  height: 36,
+                  border: "2px solid #0d1526",
+                  borderTop: `2px solid ${gold}`,
+                  borderRadius: "50%",
+                  animation: "mspin 0.8s linear infinite",
+                  margin: "0 auto 1rem",
+                }}
+              />
+              <div
+                style={{
+                  fontFamily: fontDisplay,
+                  fontSize: "1.5rem",
+                  color: "#fff",
+                  letterSpacing: "0.2em",
+                  margin: "0 0 0.3rem",
+                }}
               >
-                <X size={32} />
-              </button>
-            )}
-
-            {!laminasReveladas ? (
-              // ANIMACIÓN DE CARGA / SUSPENSO
-              <div className="flex flex-col items-center animate-pulse">
-                <Star
-                  className="text-gold animate-spin mb-6"
-                  size={64}
-                  fill="#D4AF37"
-                />
-                <h2 className="font-display text-3xl font-black text-white uppercase tracking-widest">
-                  Abriendo Sobre...
-                </h2>
-                <p className="mt-2 text-gold">
-                  Conectando con la base de datos oficial...
-                </p>
+                Abriendo sobre...
               </div>
-            ) : (
-              // LÁMINAS REVELADAS
-              <div className="space-y-12 animate-in fade-in zoom-in duration-500">
-                <div className="flex items-center justify-center gap-3">
-                  <Sparkles className="text-gold" size={32} />
-                  <h2 className="font-display text-4xl font-black text-white uppercase tracking-widest text-shadow-lg">
-                    ¡Nuevas Banderas!
-                  </h2>
-                  <Sparkles className="text-gold" size={32} />
+              <div
+                style={{
+                  fontSize: "0.72rem",
+                  color: "#3a4460",
+                  letterSpacing: "0.1em",
+                }}
+              >
+                Sincronizando con los servidores
+              </div>
+            </div>
+          ) : (
+            nuevasLaminas && (
+              <>
+                <div
+                  style={{
+                    fontFamily: fontDisplay,
+                    fontSize: "1.8rem",
+                    color: gold,
+                    letterSpacing: "0.15em",
+                    margin: "0 0 1.5rem",
+                  }}
+                >
+                  ¡Nuevas banderas!
                 </div>
 
-                <div className="flex flex-wrap justify-center gap-6">
-                  {laminasReveladas.map((lamina, index) => (
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "center",
+                    gap: "1rem",
+                    flexWrap: "wrap",
+                    marginBottom: "1.8rem",
+                  }}
+                >
+                  {nuevasLaminas.map((lamina, i) => (
                     <div
                       key={lamina.id}
-                      className="w-40 aspect-[3/4] overflow-hidden rounded-xl border-4 border-gold bg-white shadow-2xl shadow-gold/50 transform transition-all hover:-translate-y-4"
-                      style={{ animationDelay: `${index * 150}ms` }} // Efecto cascada
+                      style={{
+                        width: 110,
+                        aspectRatio: "3/4",
+                        background: bgCard,
+                        border: `1px solid ${gold}55`,
+                        borderRadius: 3,
+                        display: "flex",
+                        flexDirection: "column",
+                        overflow: "hidden",
+                        animation: `cardReveal 0.4s ease ${i * 0.12}s both`,
+                      }}
                     >
-                      <div className="flex h-3/4 items-center justify-center bg-gradient-to-br from-gray-50 to-gray-200 text-8xl drop-shadow-xl">
+                      <div
+                        style={{
+                          flex: 1,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          fontSize: "3.2rem",
+                        }}
+                      >
                         {lamina.bandera}
                       </div>
-                      <div className="flex h-1/4 flex-col items-center justify-center bg-royal text-white border-t-4 border-gold">
-                        <span className="text-xs font-black uppercase tracking-widest">
+                      <div
+                        style={{
+                          background: bgDark,
+                          borderTop: `1px solid ${borderGold}`,
+                          padding: 5,
+                          textAlign: "center",
+                        }}
+                      >
+                        <div
+                          style={{
+                            fontSize: "0.55rem",
+                            color: gold,
+                            letterSpacing: "0.15em",
+                            textTransform: "uppercase" as const,
+                            marginBottom: 2,
+                          }}
+                        >
+                          Nueva
+                        </div>
+                        <div
+                          style={{
+                            fontFamily: fontDisplay,
+                            fontSize: "0.65rem",
+                            color: "#fff",
+                            textTransform: "uppercase" as const,
+                            letterSpacing: "0.1em",
+                          }}
+                        >
                           {lamina.nombre}
-                        </span>
-                        <span className="text-[8px] text-gray-300 uppercase">
-                          {lamina.confederacion}
-                        </span>
+                        </div>
                       </div>
                     </div>
                   ))}
                 </div>
 
                 <button
-                  onClick={cerrarModal}
-                  className="rounded-full bg-gold px-8 py-3 font-bold text-royal hover:bg-white hover:scale-105 transition-all"
+                  className="sobre-cta"
+                  onClick={onClose}
+                  style={{
+                    background: `linear-gradient(90deg, #b8861e, ${gold}, ${goldLight}, ${gold}, #b8861e)`,
+                    backgroundSize: "200% 100%",
+                    border: "none",
+                    borderRadius: 2,
+                    padding: "0.8rem 2.5rem",
+                    fontFamily: fontDisplay,
+                    fontSize: "0.95rem",
+                    letterSpacing: "0.2em",
+                    color: bg,
+                    cursor: "pointer",
+                    transition: "all 0.3s",
+                  }}
                 >
-                  PEGAR EN EL ÁLBUM
+                  Pegar en el álbum
                 </button>
-              </div>
-            )}
+              </>
+            )
+          )}
+        </div>
+      </div>
+    </>
+  );
+}
+
+// ─── Página Principal ─────────────────────────────────────────────────────────
+export default function AlbumPage() {
+  const [cargando, setCargando] = useState(true);
+  const [misLaminas, setMisLaminas] = useState<Set<number>>(
+    new Set([1, 2, 8, 12]),
+  );
+  const [hoveredCard, setHoveredCard] = useState<number | null>(null);
+  const [modalAbierto, setModalAbierto] = useState(false);
+  const [cargandoSobre, setCargandoSobre] = useState(false);
+  const [nuevasLaminas, setNuevasLaminas] = useState<PaisAlbum[] | null>(null);
+
+  useEffect(() => {
+    const t = setTimeout(() => setCargando(false), 500);
+    return () => clearTimeout(t);
+  }, []);
+
+  const laminasObtenidas = misLaminas.size;
+  const porcentaje = Math.round((laminasObtenidas / TOTAL_LAMINAS) * 100);
+
+  const abrirSobre = () => {
+    setModalAbierto(true);
+    setCargandoSobre(true);
+    setNuevasLaminas(null);
+
+    setTimeout(() => {
+      // Obtener láminas que el usuario no tiene
+      const disponibles = SECCIONES_ALBUM.flatMap((s) => s.paises).filter(
+        (p) => !misLaminas.has(p.id),
+      );
+      const seleccionadas = disponibles
+        .sort(() => Math.random() - 0.5)
+        .slice(0, Math.min(3, disponibles.length));
+
+      setNuevasLaminas(seleccionadas);
+      setCargandoSobre(false);
+      setMisLaminas((prev) => {
+        const nueva = new Set(prev);
+        seleccionadas.forEach((p) => nueva.add(p.id));
+        return nueva;
+      });
+    }, 1400);
+  };
+
+  const cerrarModal = () => {
+    setModalAbierto(false);
+    setNuevasLaminas(null);
+  };
+
+  if (cargando) {
+    return (
+      <PageShell>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            height: "60vh",
+            fontFamily: fontDisplay,
+            fontSize: "1.2rem",
+            letterSpacing: "0.25em",
+            color: gold,
+          }}
+        >
+          CARGANDO ÁLBUM...
+        </div>
+      </PageShell>
+    );
+  }
+
+  return (
+    <PageShell>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap');
+        @import url('https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css');
+        .sobre-btn-main:hover { background-position: 100% 0 !important; transform: translateY(-1px); }
+      `}</style>
+
+      <div
+        style={{
+          maxWidth: 1280,
+          margin: "0 auto",
+          width: "100%",
+          padding: "2.5rem 3rem",
+        }}
+      >
+        {/* ── Encabezado ── */}
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "flex-end",
+            marginBottom: "2rem",
+            flexWrap: "wrap",
+            gap: "1rem",
+          }}
+        >
+          <div>
+            <EyebrowLabel>Colección oficial 2026</EyebrowLabel>
+            <h1
+              style={{
+                fontFamily: fontDisplay,
+                fontSize: "clamp(2.5rem, 4vw, 3.5rem)",
+                color: "#fff",
+                margin: "0 0 0.4rem",
+                textTransform: "uppercase" as const,
+                lineHeight: 0.95,
+                letterSpacing: "0.03em",
+              }}
+            >
+              Álbum <span style={{ color: gold }}>Mundial</span>
+            </h1>
+            <p
+              style={{
+                fontFamily: fontBody,
+                fontSize: "0.78rem",
+                color: "#3a4460",
+                margin: 0,
+                maxWidth: 420,
+                lineHeight: 1.6,
+              }}
+            >
+              Gestiona tu colección de banderas de los 48 países clasificados.
+            </p>
+          </div>
+
+          <button
+            className="sobre-btn-main"
+            onClick={abrirSobre}
+            style={{
+              background: `linear-gradient(90deg, #b8861e, ${gold}, ${goldLight}, ${gold}, #b8861e)`,
+              backgroundSize: "200% 100%",
+              border: "none",
+              borderRadius: 2,
+              padding: "0.8rem 2rem",
+              fontFamily: fontDisplay,
+              fontSize: "0.95rem",
+              letterSpacing: "0.2em",
+              color: bg,
+              cursor: "pointer",
+              transition: "all 0.3s",
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+            }}
+          >
+            <i
+              className="ti ti-package"
+              style={{ fontSize: 16 }}
+              aria-hidden="true"
+            />
+            Abrir sobre
+          </button>
+        </div>
+
+        {/* ── Barra de progreso ── */}
+        <div
+          style={{
+            background: bgDark,
+            border: `1px solid #0d1526`,
+            borderRadius: 3,
+            padding: "1.2rem 1.5rem",
+            marginBottom: "2.5rem",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginBottom: "0.6rem",
+            }}
+          >
+            <span
+              style={{
+                fontFamily: fontDisplay,
+                fontSize: "0.85rem",
+                color: "#3a4460",
+                letterSpacing: "0.1em",
+                textTransform: "uppercase" as const,
+              }}
+            >
+              Tu progreso
+            </span>
+            <span
+              style={{
+                fontFamily: fontDisplay,
+                fontSize: "1.4rem",
+                color: gold,
+                letterSpacing: "0.05em",
+              }}
+            >
+              {laminasObtenidas} / {TOTAL_LAMINAS}
+            </span>
+          </div>
+          <div
+            style={{
+              height: 4,
+              background: "#0d1220",
+              borderRadius: 0,
+              overflow: "hidden",
+            }}
+          >
+            <div
+              style={{
+                width: `${porcentaje}%`,
+                height: "100%",
+                background: `linear-gradient(90deg, #b8861e, ${gold}, ${goldLight})`,
+                transition: "width 1s cubic-bezier(0.4,0,0.2,1)",
+              }}
+            />
+          </div>
+          <div
+            style={{
+              fontSize: "0.65rem",
+              color: "#252e42",
+              textAlign: "right",
+              marginTop: 4,
+              letterSpacing: "0.1em",
+            }}
+          >
+            {porcentaje}% COMPLETADO
           </div>
         </div>
+
+        {/* ── Secciones del álbum ── */}
+        <div
+          style={{ display: "flex", flexDirection: "column", gap: "2.5rem" }}
+        >
+          {SECCIONES_ALBUM.map((seccion) => {
+            const obtenidas = seccion.paises.filter((p) =>
+              misLaminas.has(p.id),
+            ).length;
+            return (
+              <div key={seccion.nombre}>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 10,
+                    borderBottom: "1px solid #0d1220",
+                    paddingBottom: "0.7rem",
+                    marginBottom: "1rem",
+                  }}
+                >
+                  <div
+                    style={{
+                      width: 28,
+                      height: 28,
+                      borderRadius: 2,
+                      border: `1px solid ${borderGold}`,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      color: gold,
+                      fontSize: 14,
+                    }}
+                  >
+                    <i className={`ti ${seccion.icono}`} aria-hidden="true" />
+                  </div>
+                  <h2
+                    style={{
+                      fontFamily: fontDisplay,
+                      fontSize: "1rem",
+                      color: "#fff",
+                      textTransform: "uppercase" as const,
+                      letterSpacing: "0.12em",
+                      margin: 0,
+                    }}
+                  >
+                    {seccion.nombre}
+                  </h2>
+                  <span
+                    style={{
+                      marginLeft: "auto",
+                      fontSize: "0.65rem",
+                      color: "#252e42",
+                      letterSpacing: "0.1em",
+                    }}
+                  >
+                    {obtenidas}/{seccion.paises.length}
+                  </span>
+                </div>
+
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns:
+                      "repeat(auto-fill, minmax(130px, 1fr))",
+                    gap: 12,
+                  }}
+                >
+                  {seccion.paises.map((pais) =>
+                    misLaminas.has(pais.id) ? (
+                      <CardObtenida
+                        key={pais.id}
+                        pais={pais}
+                        isHovered={hoveredCard === pais.id}
+                        onMouseEnter={() => setHoveredCard(pais.id)}
+                        onMouseLeave={() => setHoveredCard(null)}
+                      />
+                    ) : (
+                      <CardVacia key={pais.id} id={pais.id} />
+                    ),
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* ── Modal sobre ── */}
+      {modalAbierto && (
+        <ModalSobre
+          cargando={cargandoSobre}
+          nuevasLaminas={nuevasLaminas}
+          onClose={cerrarModal}
+        />
       )}
     </PageShell>
   );
