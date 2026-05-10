@@ -38,6 +38,7 @@ export function PageShell({ children }: PageShellProps) {
     { name: "contacto", path: "/contacto" },
     { name: "checkout", path: "/checkout" },
     { name: "perfil", path: "/perfil" },
+    { name: "admin", path: "/admin" },
   ];
 
   const mid = 3;

@@ -10,46 +10,130 @@ interface PaisAlbum {
 
 interface SeccionAlbum {
   nombre: string;
-  icono: string; // clase de Tabler Icons, ej: "ti-map"
+  icono: string;
   paises: PaisAlbum[];
 }
 
 // ─── Mock Data ────────────────────────────────────────────────────────────────
 const SECCIONES_ALBUM: SeccionAlbum[] = [
   {
-    nombre: "CONMEBOL · Sudamérica",
-    icono: "ti-map",
+    nombre: "GRUPO A",
+    icono: "ti-a",
     paises: [
-      { id: 1, nombre: "Colombia", bandera: "🇨🇴" },
-      { id: 2, nombre: "Argentina", bandera: "🇦🇷" },
-      { id: 3, nombre: "Brasil", bandera: "🇧🇷" },
+      { id: 1, nombre: "Mexico", bandera: "🇨🇴" },
+      { id: 2, nombre: "Sur áfrica", bandera: "🇦🇷" },
+      { id: 3, nombre: "República de Korea", bandera: "🇧🇷" },
       { id: 4, nombre: "Uruguay", bandera: "🇺🇾" },
-      { id: 5, nombre: "Ecuador", bandera: "🇪🇨" },
-      { id: 6, nombre: "Venezuela", bandera: "🇻🇪" },
     ],
   },
   {
-    nombre: "UEFA · Europa",
-    icono: "ti-world",
+    nombre: "GRUPO B",
+    icono: "ti-b",
     paises: [
-      { id: 7, nombre: "Alemania", bandera: "🇩🇪" },
-      { id: 8, nombre: "Francia", bandera: "🇫🇷" },
-      { id: 9, nombre: "España", bandera: "🇪🇸" },
-      { id: 10, nombre: "Inglaterra", bandera: "🏴󠁧󠁢󠁥󠁮󠁧󠁿" },
-      { id: 11, nombre: "Portugal", bandera: "🇵🇹" },
-      { id: 12, nombre: "Italia", bandera: "🇮🇹" },
+      { id: 5, nombre: "Canada", bandera: "🇩🇪" },
+      { id: 6, nombre: "Bosnia-Herzegovina", bandera: "🇫🇷" },
+      { id: 7, nombre: "Qatar", bandera: "🇪🇸" },
+      { id: 8, nombre: "Suiza", bandera: "🏴󠁧󠁢󠁥󠁮󠁧󠁿" },
     ],
   },
   {
-    nombre: "CONCACAF · N. América",
-    icono: "ti-building",
+    nombre: "GRUPO C",
+    icono: "ti-c",
     paises: [
-      { id: 13, nombre: "México", bandera: "🇲🇽" },
-      { id: 14, nombre: "EE. UU.", bandera: "🇺🇸" },
-      { id: 15, nombre: "Canadá", bandera: "🇨🇦" },
-      { id: 16, nombre: "Costa Rica", bandera: "🇨🇷" },
-      { id: 17, nombre: "Jamaica", bandera: "🇯🇲" },
-      { id: 18, nombre: "Panamá", bandera: "🇵🇦" },
+      { id: 9, nombre: "Brasil", bandera: "�🇷" },
+      { id: 10, nombre: "Marruecos", bandera: "🇺🇸" },
+      { id: 11, nombre: "Haiti", bandera: "🇨🇦" },
+      { id: 12, nombre: "Escocia", bandera: "🇨🇷" },
+    ],
+  },
+  {
+    nombre: "GRUPO D",
+    icono: "ti-d",
+    paises: [
+      { id: 13, nombre: "EE. UU.", bandera: "🇲🇽" },
+      { id: 14, nombre: "Paraguay", bandera: "🇺🇸" },
+      { id: 15, nombre: "Australia", bandera: "🇨🇦" },
+      { id: 16, nombre: "Turquía", bandera: "🇨🇷" },
+    ],
+  },
+  {
+    nombre: "GRUPO E",
+    icono: "ti-e",
+    paises: [
+      { id: 17, nombre: "Alemania", bandera: "🇲🇽" },
+      { id: 18, nombre: "Curazao", bandera: "🇺🇸" },
+      { id: 19, nombre: "Costa de Marfil", bandera: "🇨🇦" },
+      { id: 20, nombre: "Ecuador", bandera: "🇨🇷" },
+    ],
+  },
+  {
+    nombre: "GRUPO F",
+    icono: "ti-f",
+    paises: [
+      { id: 21, nombre: "Holanda", bandera: "🇲🇽" },
+      { id: 22, nombre: "Japón", bandera: "🇺🇸" },
+      { id: 23, nombre: "Suecia", bandera: "🇨🇦" },
+      { id: 24, nombre: "Tunez", bandera: "🇨🇷" },
+    ],
+  },
+  {
+    nombre: "GRUPO G",
+    icono: "ti-g",
+    paises: [
+      { id: 25, nombre: "Bélgica", bandera: "🇲🇽" },
+      { id: 26, nombre: "Egipto", bandera: "🇺🇸" },
+      { id: 27, nombre: "Iran", bandera: "🇨🇦" },
+      { id: 28, nombre: "Nueva Zelanda", bandera: "🇨🇷" },
+    ],
+  },
+  {
+    nombre: "GRUPO H",
+    icono: "ti-h",
+    paises: [
+      { id: 29, nombre: "España", bandera: "🇲🇽" },
+      { id: 30, nombre: "Cabo verde", bandera: "🇺🇸" },
+      { id: 31, nombre: "Arabia Saudita", bandera: "🇨🇦" },
+      { id: 32, nombre: "Uruguay", bandera: "🇨🇷" },
+    ],
+  },
+  {
+    nombre: "GRUPO I",
+    icono: "ti-i",
+    paises: [
+      { id: 33, nombre: "Francia", bandera: "🇲🇽" },
+      { id: 34, nombre: "Senegal", bandera: "🇺🇸" },
+      { id: 35, nombre: "Irak", bandera: "🇨🇦" },
+      { id: 36, nombre: "Noruega", bandera: "🇨🇷" },
+    ],
+  },
+  {
+    nombre: "GRUPO J",
+    icono: "ti-j",
+    paises: [
+      { id: 37, nombre: "Argentina", bandera: "🇲🇽" },
+      { id: 38, nombre: "Algeria", bandera: "🇺🇸" },
+      { id: 39, nombre: "Austria", bandera: "🇨🇦" },
+      { id: 40, nombre: "Jordan", bandera: "🇨🇷" },
+    ],
+  },
+  {
+    nombre: "GRUPO K",
+    icono: "ti-k",
+    paises: [
+      { id: 41, nombre: "Portugal", bandera: "🇲🇽" },
+      { id: 42, nombre: "República del Congo", bandera: "🇺🇸" },
+      { id: 43, nombre: "Uzbekistán", bandera: "🇨🇦" },
+      { id: 44, nombre: "Colombia", bandera: "🇨🇷" },
+    ],
+  },
+  {
+    nombre: "GRUPO L",
+    icono: "ti-l",
+    paises: [
+      { id: 45, nombre: "Inglaterra", bandera: "🇲🇽" },
+      { id: 46, nombre: "Croacia", bandera: "🇺🇸" },
+      { id: 47, nombre: "Ghana", bandera: "🇨🇦" },
+      { id: 48, nombre: "Panama", bandera: "🇨🇷" },
     ],
   },
 ];
