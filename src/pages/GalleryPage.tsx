@@ -1,5 +1,4 @@
 import { useState, useCallback, useRef } from "react";
-// Importamos el estándar que acabamos de crear
 import { PageShell, T } from "../components/layout/PageShell";
 
 // ─── Tipos ────────────────────────────────────────────────────────────────────
@@ -22,6 +21,10 @@ const GRUPO_COLORS: Record<string, string> = {
   F: "#e84393",
   G: "#14b8a6",
   H: "#ef4444",
+  I: "#3b82f6",
+  J: "#10b981",
+  K: "#8b5cf6",
+  L: "#f59e0b",
 };
 
 // ─── Mock Data ────────────────────────────────────────────────────────────────
@@ -109,7 +112,6 @@ function ModalSubir({
   };
 
   return (
-    // ✅ CORREGIDO
     <div
       style={{
         position: "fixed",
@@ -509,7 +511,21 @@ export default function AlbumPage() {
             paddingBottom: "1.5rem",
           }}
         >
-          {["TODOS", "A", "B", "C", "D", "E", "F", "G", "H"].map((g) => (
+          {[
+            "TODOS",
+            "A",
+            "B",
+            "C",
+            "D",
+            "E",
+            "F",
+            "G",
+            "H",
+            "I",
+            "J",
+            "K",
+            "L",
+          ].map((g) => (
             <button
               key={g}
               onClick={() => setFiltro(g)}
