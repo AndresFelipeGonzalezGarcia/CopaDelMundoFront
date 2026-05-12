@@ -126,9 +126,7 @@ export default function PerfilPage() {
                   zIndex: 2,
                   boxShadow: `0 0 20px ${T.gold}44`,
                 }}
-              >
-                👤
-              </div>
+              ></div>
 
               <h2
                 style={{

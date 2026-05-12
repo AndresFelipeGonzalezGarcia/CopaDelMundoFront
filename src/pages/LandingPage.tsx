@@ -410,7 +410,7 @@ export default function LandingPage() {
             >
               {[
                 { num: "48", label: "Partidos" },
-                { num: "32", label: "Selecciones" },
+                { num: "48", label: "Selecciones" },
                 { num: "3", label: "Sedes" },
                 { num: "∞", label: "Emoción" },
               ].map((s, i) => (
@@ -465,7 +465,7 @@ export default function LandingPage() {
             },
             {
               icon: "ti-calendar",
-              title: "Calendario en vivo",
+              title: "Calendario",
               desc: "Resultados y fixture actualizados al instante",
             },
           ].map((f, i) => (

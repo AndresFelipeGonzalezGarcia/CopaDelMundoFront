@@ -21,7 +21,7 @@ const PRODUCTOS: Producto[] = [
     descripcion: "1 sobre básico (5 láminas aleatorias)",
     precio: 5000,
     color: "#8a95a5",
-    icono: "📦",
+    icono: "",
   },
   {
     id: "sobre_silver",
@@ -30,7 +30,7 @@ const PRODUCTOS: Producto[] = [
     descripcion: "3 sobres + 1 lámina holográfica garantizada",
     precio: 12000,
     color: "#c0c0c0",
-    icono: "🥈",
+    icono: "",
   },
   {
     id: "sobre_gold",
@@ -39,7 +39,7 @@ const PRODUCTOS: Producto[] = [
     descripcion: "5 sobres premium de alta rareza",
     precio: 20000,
     color: T.gold,
-    icono: "✦",
+    icono: "",
   },
   {
     id: "ticket_vip",
@@ -48,7 +48,7 @@ const PRODUCTOS: Producto[] = [
     descripcion: "Boleto Categoría 1 - Acceso a Zonas Exclusivas",
     precio: 350000,
     color: "#a855f7",
-    icono: "🎫",
+    icono: "",
   },
 ];
 
@@ -409,7 +409,7 @@ export default function CheckoutPage() {
                     name="nombre"
                     value={datosPago.nombre}
                     onChange={handleChange}
-                    placeholder="ANDRÉS G."
+                    placeholder="ejm: ANDRÉS G."
                     style={{
                       width: "100%",
                       background: T.bg1,
